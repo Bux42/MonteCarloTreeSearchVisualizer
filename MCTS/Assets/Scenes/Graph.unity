@@ -167,7 +167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3efd1bc6b99195f438f338fb0dcb5782, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nodePrefab: {fileID: -8681598849370107832, guid: c7bd196a6365f87488d983719c30bc6d, type: 3}
+  nodePrefab: {fileID: -8681598849370107832, guid: 9d3914553ef73924a8a5f3e026b36c19, type: 3}
   edgePrefab: {fileID: 3061032862633757617, guid: b3deb97ca9b618141b7f010db7541c10, type: 3}
   repulsion: 100
   springK: 10
