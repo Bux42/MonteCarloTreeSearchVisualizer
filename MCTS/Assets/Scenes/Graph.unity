@@ -284,7 +284,7 @@ MonoBehaviour:
   mainCamera: {fileID: 1478430299}
   zoomSpeed: 5
   minDistance: 2
-  maxDistance: 50
+  maxDistance: 5000
   rotationSpeed: 200
   focusLerpSpeed: 5
 --- !u!1 &1655341160

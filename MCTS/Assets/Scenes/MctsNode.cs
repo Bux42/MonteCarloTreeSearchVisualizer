@@ -1,30 +1,64 @@
+
+using System;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Linq;
 
-[RequireComponent(typeof(SphereCollider))]
-public class MctsNode : MonoBehaviour
+[System.Serializable]
+public class Edge
 {
-    [Header("Graph")]
-    public MctsNode parent;
-    public List<MctsNode> children = new List<MctsNode>();
+    public int source;
+    public int target;
+}
 
-    [Header("Physics (runtime)")]
-    [HideInInspector] public Vector3 velocity;
+[System.Serializable]
+public class Meta
+{
+    public int rootId;
+    public DateTime generatedAt;
+    public int nodeCount;
+    public int edgeCount;
+    public object maxDepth;
+    public object maxNodes;
+}
 
-    // Optional: tint the node by depth for readability
-    public void SetDepthColor(int depth)
+[System.Serializable]
+public class Node
+{
+    public int id;
+    public int parentId;
+    public int depth;
+    public int move;
+    public double critic;
+    public int visits;
+    public double wins;
+    public bool terminated;
+    public int iteration;
+    public bool fightWon;
+    public List<int> children;
+}
+
+[System.Serializable]
+public class MctcTree
+{
+    public Meta meta;
+    public List<Node> nodes;
+    public List<Edge> edges;
+    public double minCriticScore;
+    public double maxCriticScore;
+
+    public void SetMinMaxValues()
     {
-        var r = GetComponent<Renderer>();
-        if (!r) return;
-        float t = Mathf.InverseLerp(0, 8, depth);
-        r.material.color = Color.Lerp(Color.white, new Color(0.7f, 0.9f, 1f), t);
+        minCriticScore = nodes.Min(x => x.critic);
+        maxCriticScore = nodes.Max(x => x.critic);
     }
 
-    public int GetDepth()
+    public double NormalizeCriticScore(double score)
     {
-        int d = 0;
-        var cur = parent;
-        while (cur != null) { d++; cur = cur.parent; }
-        return d;
+        return (score - minCriticScore) / (maxCriticScore - minCriticScore);
     }
+}
+
+public class MctsNode
+{
+
 }

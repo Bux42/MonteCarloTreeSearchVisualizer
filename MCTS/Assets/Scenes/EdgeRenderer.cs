@@ -3,8 +3,8 @@ using UnityEngine;
 [RequireComponent(typeof(LineRenderer))]
 public class EdgeRenderer : MonoBehaviour
 {
-    public MctsNode a;
-    public MctsNode b;
+    public MctsNodeSphere a;
+    public MctsNodeSphere b;
 
     LineRenderer lr;
 

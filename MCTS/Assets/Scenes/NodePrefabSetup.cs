@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [ExecuteAlways]
-[RequireComponent(typeof(MctsNode))]
+[RequireComponent(typeof(MctsNodeSphere))]
 public class NodePrefabSetup : MonoBehaviour
 {
     void Reset()

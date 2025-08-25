@@ -1,10 +1,11 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class GraphController : MonoBehaviour
 {
     [Header("Prefabs")]
-    public MctsNode nodePrefab;
+    public MctsNodeSphere nodePrefab;
     public EdgeRenderer edgePrefab;
 
     [Header("Physics (layout)")]
@@ -18,25 +19,187 @@ public class GraphController : MonoBehaviour
     [Header("Camera")]
     public Camera mainCamera;
 
-    List<MctsNode> nodes = new List<MctsNode>();
+    List<MctsNodeSphere> nodes = new List<MctsNodeSphere>();
     List<EdgeRenderer> edges = new List<EdgeRenderer>();
+
+    MctcTree tree = null;
+    Gradient nodeColorGradient = new Gradient();
 
     // Start is called before the first frame update
     void Start()
     {
-        // Create root
-        var root = Instantiate(nodePrefab, Vector3.zero, Quaternion.identity, transform);
-        root.gameObject.name = "Root";
-        root.SetDepthColor(0);
-        nodes.Add(root);
+        //// Create root
+        //var root = Instantiate(nodePrefab, Vector3.zero, Quaternion.identity, transform);
+        //root.gameObject.name = "Root";
+        //root.SetDepthColor(0);
+        //nodes.Add(root);
+
+        var colors = new GradientColorKey[3];
+
+        colors[0] = new GradientColorKey(Color.red, 0.0f);
+        colors[1] = new GradientColorKey(Color.yellow, 0.5f);
+        colors[2] = new GradientColorKey(Color.green, 1.0f);
+
+        var alphas = new GradientAlphaKey[3];
+        alphas[0] = new GradientAlphaKey(1.0f, 1.0f);
+        alphas[1] = new GradientAlphaKey(1.0f, 1.0f);
+        alphas[2] = new GradientAlphaKey(1.0f, 1.0f);
+
+        nodeColorGradient.SetKeys(colors, alphas);
+
+        LoadTreeFile();
     }
 
     // Update is called once per frame
     void Update()
     {
         RunLayout(Time.deltaTime);
-        HandleClickToAddChild();
+        //HandleClickToAddChild();
+
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    // Deserialize Assets/Data/mcts_tree.json to MctcTree class
+
+        //    TextAsset textFile = (TextAsset)Resources.Load("mcts_tree");
+        //    var all = Resources.LoadAll(".");
+
+        //    MctcTree tree = JsonUtility.FromJson<MctcTree>(textFile.text);
+
+        //    Debug.Log($"Loaded tree with {tree.nodes.Count} nodes and {tree.edges.Count} edges");
+
+        //    // json doesn't like nulls, so we use -1 instead of nullable ints
+        //}
+
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            if (tree == null) return;
+
+            if (nodes.Count == 0)
+            {
+                var rootTreeNode = tree.nodes.Find(n => n.parentId == -1);
+
+                // Create root
+                var root = Instantiate(nodePrefab, Vector3.zero, Quaternion.identity, transform);
+                root.gameObject.name = $"Node_id_{rootTreeNode.id}";
+                //root.SetDepthColor(0);
+                nodes.Add(root);
+            }
+            else
+            {
+                for (int i = 0; i < tree.nodes.Count; i++)
+                {
+                    var tn = tree.nodes[i];
+                    // Check if this node is already created
+                    bool exists = nodes.Exists(n => n.name == $"Node_id_{tn.id}");
+                    if (exists) continue;
+
+                    // Find parent node in scene
+                    var parentNode = nodes.Find(n => n.name == $"Node_id_{tn.parentId}");
+                    if (parentNode == null)
+                    {
+                        Debug.LogWarning($"Parent node with id {tn.parentId} not found for node id {tn.id}");
+                        continue;
+                    }
+
+                    // Create new node
+                    Vector3 spawnPos = parentNode.transform.position + UnityEngine.Random.onUnitSphere * 0.8f;
+                    var newNode = Instantiate(nodePrefab, spawnPos, Quaternion.identity, transform);
+
+                    // Set node color START
+
+                    //Color sphereColor = CriticToColor(tn.critic, tree.minCriticScore, tree.maxCriticScore);
+                    Color sphereColor = nodeColorGradient.Evaluate((float)tree.NormalizeCriticScore(tn.critic));
+
+                    Debug.Log($"Node id {tn.id} critic {tn.critic} color {sphereColor} normalized critic score: {tree.NormalizeCriticScore(tn.critic)}");
+                    Debug.Log($"blue {Color.blue}");
+
+                    //var sphereNodeSphereScript = newNode.GetComponent<MctsNodeSphere>();
+                    //sphereNodeSphereScript.SetColor(sphereColor);
+
+                    newNode.GetComponent<MeshRenderer>().materials[0].SetColor("_Color", sphereColor);
+                    newNode.GetComponent<MeshRenderer>().materials[0].color = sphereColor;
+                    //newNode.GetComponent<MeshRenderer>().materials[0].color = Color.blue;
+                    //newNode.GetComponent<MctsNodeSphere>().GetComponent<MeshRenderer>().materials[0].SetColor("_EmissionColor", sphereColor);
+
+                    //var rend = newNode.GetComponentInChildren<MeshRenderer>();
+                    //var rend2 = newNode.GetComponent<Renderer>();
+
+                    //if (rend != null)
+                    //{
+                    //    //new Material(Shader.Find("Standard"))
+                    //    rend.material = new Material(Shader.Find("Standard")); // unique material
+                    //    Color sphereColor = CriticToColor(tn.critic, tree.minCriticScore, tree.maxCriticScore);
+
+                    //    Debug.Log($"Node id {tn.id} critic {tn.critic} color {sphereColor}");
+                    //    rend.material.color = sphereColor;
+                    //    rend.materials[0].color = sphereColor;
+                    //}
+
+
+                    //MeshRenderer gameObjectRenderer = newNode.GetComponent<MeshRenderer>();
+
+                    //Material newMaterial = new Material(Shader.Find("Unlit/Texture")) { color = whateverColor };
+
+                    //gameObjectRenderer.material = newMaterial;
+                    // Set node color END
+
+                    newNode.gameObject.name = $"Node_id_{tn.id}";
+                    newNode.parent = parentNode;
+                    parentNode.children.Add(newNode);
+                    newNode.SetDepthColor(newNode.GetDepth());
+                    nodes.Add(newNode);
+
+                    // Create edge
+                    var edge = Instantiate(edgePrefab, transform);
+                    edge.a = parentNode;
+                    edge.b = newNode;
+                    edges.Add(edge);
+                    break;
+                }
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (tree == null) return;
+
+        }
     }
+
+    Color CriticToColor(double value, double vmin = -200, double vmax = 200)
+    {
+        // clamp
+        double v = Math.Max(Math.Min(value, vmax), vmin);
+        // normalize [0..1]
+        double norm = (v - vmin) / (vmax - vmin);
+
+        if (norm < 0.5)
+        {
+            // red -> white
+            float t = (float)(norm / 0.5);
+            return new Color(1f, t, t);
+        }
+        else
+        {
+            // white -> green
+            float t = (float)((norm - 0.5) / 0.5);
+            return new Color(1f - t, 1f, 1f - t);
+        }
+    }
+
+    void LoadTreeFile()
+    {
+        // Deserialize Assets/Data/mcts_tree.json to MctcTree class
+
+        TextAsset textFile = (TextAsset)Resources.Load("mcts_tree");
+        var all = Resources.LoadAll(".");
+
+        tree = JsonUtility.FromJson<MctcTree>(textFile.text);
+
+        Debug.Log($"Loaded tree with {tree.nodes.Count} nodes and {tree.edges.Count} edges");
+        tree.SetMinMaxValues();
+        // json doesn't like nulls, so we use -1 instead of nullable ints
+    }
+
 
     void RunLayout(float dt)
     {
@@ -90,7 +253,7 @@ public class GraphController : MonoBehaviour
         var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (!Physics.Raycast(ray, out var hit, 1000f)) return;
 
-        var node = hit.collider.GetComponentInParent<MctsNode>();
+        var node = hit.collider.GetComponentInParent<MctsNodeSphere>();
         if (!node) return;
 
         Debug.Log($"Add child to {node.name}");
@@ -98,10 +261,10 @@ public class GraphController : MonoBehaviour
         AddChild(node);
     }
 
-    public void AddChild(MctsNode parent)
+    public void AddChild(MctsNodeSphere parent)
     {
         // Spawn near parent with slight random offset
-        Vector3 spawnPos = parent.transform.position + Random.onUnitSphere * 0.8f;
+        Vector3 spawnPos = parent.transform.position + UnityEngine.Random.onUnitSphere * 0.8f;
         var child = Instantiate(nodePrefab, spawnPos, Quaternion.identity, transform);
         child.gameObject.name = $"Node_{nodes.Count}";
         child.parent = parent;

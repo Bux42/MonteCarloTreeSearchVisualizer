@@ -89,12 +89,12 @@ public class CameraController : MonoBehaviour
         mainCamera.transform.LookAt(focusPoint);
     }
 
-    MctsNode RaycastNodeUnderMouse()
+    MctsNodeSphere RaycastNodeUnderMouse()
     {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit, 1000f))
         {
-            return hit.collider.GetComponentInParent<MctsNode>();
+            return hit.collider.GetComponentInParent<MctsNodeSphere>();
         }
         return null;
     }
