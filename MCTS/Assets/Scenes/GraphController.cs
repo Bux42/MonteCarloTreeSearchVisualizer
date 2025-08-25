@@ -21,8 +21,6 @@ public class GraphController : MonoBehaviour
     List<MctsNode> nodes = new List<MctsNode>();
     List<EdgeRenderer> edges = new List<EdgeRenderer>();
 
-    GameObject lookAtFocus = null; // optional focus object for camera
-
     // Start is called before the first frame update
     void Start()
     {
@@ -31,8 +29,6 @@ public class GraphController : MonoBehaviour
         root.gameObject.name = "Root";
         root.SetDepthColor(0);
         nodes.Add(root);
-
-        //mainCamera.transform.LookAt(root.transform.position);
     }
 
     // Update is called once per frame
@@ -40,36 +36,6 @@ public class GraphController : MonoBehaviour
     {
         RunLayout(Time.deltaTime);
         HandleClickToAddChild();
-
-        //// look at each node, switch to next node when tab is pressed
-        //if (Input.GetKeyDown(KeyCode.Tab))
-        //{
-        //    Debug.Log($"Tab pressed, {nodes.Count} nodes");
-        //    if (lookAtFocus == null)
-        //    {
-        //        lookAtFocus = nodes[0].gameObject; // start with first node
-        //        Debug.Log($"Current focus: {lookAtFocus.name}");
-
-        //    }
-        //    else
-        //    {
-        //        int currentIndex = nodes.IndexOf(lookAtFocus.GetComponent<MctsNode>());
-
-        //        Debug.Log($"Current focus: {lookAtFocus.name} at index {currentIndex}");
-
-        //        if (currentIndex < nodes.Count - 1)
-        //        {
-        //            lookAtFocus = nodes[currentIndex + 1].gameObject; // next node
-        //        }
-        //        else
-        //        {
-        //            Debug.Log($"Circle back to root node");
-        //            lookAtFocus = nodes[0].gameObject; // reset focus to root node
-        //        }
-        //    }
-        //    mainCamera.transform.LookAt(lookAtFocus ? lookAtFocus.transform.position : Vector3.zero);
-        //    Debug.Log($"Switched focus to: {(lookAtFocus ? lookAtFocus.name : "None")} at position {(lookAtFocus ? lookAtFocus.transform.position : null)}");
-        //}
     }
 
     void RunLayout(float dt)

@@ -18,7 +18,6 @@ public class CameraController : MonoBehaviour
 
     Transform target;          // current focus target
     bool focusMode = false;    // are we locked on a node?
-    bool orbiting = false; // are we orbiting a target?
     float distance = 10f;      // current camera distance
     Vector3 focusPoint;        // what we look at
 
@@ -71,12 +70,6 @@ public class CameraController : MonoBehaviour
             Vector3 dir = mainCamera.transform.position - focusPoint;
             dir = rot * dir;
             focusPoint = mainCamera.transform.position - dir;
-
-            orbiting = true;
-        }
-        else
-        {
-            orbiting = false;
         }
     }
 
