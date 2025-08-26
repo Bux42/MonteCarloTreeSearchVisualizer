@@ -60,6 +60,8 @@ public class EdgeRenderer : MonoBehaviour
     public void SetColor(Color color)
     {
         lr.materials[0].SetColor("_Color", color);
+        lr.startColor = color;
+        lr.endColor = color;
     }
 
     public void SetLineWidth(float width)
