@@ -9,8 +9,8 @@ public class GraphController : MonoBehaviour
     public EdgeRenderer edgePrefab;
 
     [Header("Physics (layout)")]
-    public float repulsion = 100.0f;       // higher = stronger push between all nodes
-    public float springK = 10.0f;        // edge spring strength
+    public float repulsion = 50.0f;       // higher = stronger push between all nodes
+    public float springK = 400.0f;        // edge spring strength
     public float restLength = 1.5f;      // preferred edge length
     public float damping = 0.99f;         // 0..1 velocity damping each frame
     public float maxSpeed = 10f;         // clamp for stability
@@ -72,55 +72,45 @@ public class GraphController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            if (tree == null) return;
-
-            if (nodes.Count == 0)
-            {
-                var rootTreeNode = tree.nodes.Find(n => n.parentId == -1);
-
-                //// Create root
-                //var root = Instantiate(nodePrefab, Vector3.zero, Quaternion.identity, transform);
-                //root.gameObject.name = $"Node_id_{rootTreeNode.id}";
-                ////root.SetDepthColor(0);
-                //nodes.Add(root);
-
-                var newNode = AddTreeNode(null, null, transform, rootTreeNode);
-
-            }
-            else
-            {
-                for (int i = 0; i < tree.nodes.Count; i++)
-                {
-                    var tn = tree.nodes[i];
-                    // Check if this node is already created
-                    bool exists = nodes.Exists(n => n.name == $"Node_id_{tn.id}");
-                    if (exists) continue;
-
-                    // Find parent node in scene
-                    var parentNode = nodes.Find(n => n.name == $"Node_id_{tn.parentId}");
-                    if (parentNode == null)
-                    {
-                        Debug.LogWarning($"Parent node with id {tn.parentId} not found for node id {tn.id}");
-                        continue;
-                    }
-
-                    // Create new node
-                    Vector3 spawnPos = parentNode.transform.position + UnityEngine.Random.onUnitSphere * 0.8f;
-
-                    var newNode = AddTreeNode(parentNode, spawnPos, transform, tn);
-
-                    // Create edge
-                    var edge = Instantiate(edgePrefab, transform);
-                    edge.a = parentNode;
-                    edge.b = newNode;
-                    edges.Add(edge);
-                    break;
-                }
-            }
+            AddNextNode();
         }
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKey(KeyCode.Space))
         {
-            if (tree == null) return;
+            AddNextNode();
+        }
+    }
+
+    void AddNextNode()
+    {
+        if (tree == null) return;
+
+        if (nodes.Count == 0)
+        {
+            var rootTreeNode = tree.nodes.Find(n => n.parentId == -1);
+            var newNode = AddTreeNode(null, null, transform, rootTreeNode);
+        }
+        else
+        {
+            for (int i = 0; i < tree.nodes.Count; i++)
+            {
+                var tn = tree.nodes[i];
+                // Check if this node is already created
+                bool exists = nodes.Exists(n => n.name == $"Node_id_{tn.id}");
+                if (exists) continue;
+
+                // Find parent node in scene
+                var parentNode = nodes.Find(n => n.name == $"Node_id_{tn.parentId}");
+                if (parentNode == null)
+                {
+                    Debug.LogWarning($"Parent node with id {tn.parentId} not found for node id {tn.id}");
+                    continue;
+                }
+
+                // Create new node
+                Vector3 spawnPos = parentNode.transform.position + UnityEngine.Random.onUnitSphere * 0.8f;
+                AddTreeNode(parentNode, spawnPos, transform, tn);
+                break;
+            }
         }
     }
 
@@ -149,6 +139,17 @@ public class GraphController : MonoBehaviour
         newNode.SetColor(sphereColor);
 
         nodes.Add(newNode);
+
+        if (parentNode != null)
+        {
+            // Create edge
+            var edge = Instantiate(edgePrefab, transform);
+            edge.a = parentNode;
+            edge.b = newNode;
+            edges.Add(edge);
+
+            edge.SetColor(CriticToColor(node.critic, tree.minCriticScore, tree.maxCriticScore));
+        }
 
         return newNode;
     }

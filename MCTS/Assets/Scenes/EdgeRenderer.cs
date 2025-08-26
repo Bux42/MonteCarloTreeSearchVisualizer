@@ -25,4 +25,9 @@ public class EdgeRenderer : MonoBehaviour
         lr.SetPosition(0, a.transform.position);
         lr.SetPosition(1, b.transform.position);
     }
+
+    public void SetColor(Color color)
+    {
+        lr.materials[0].SetColor("_Color", color);
+    }
 }
