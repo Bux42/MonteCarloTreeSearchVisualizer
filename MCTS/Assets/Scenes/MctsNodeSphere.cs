@@ -14,13 +14,41 @@ public class MctsNodeSphere : MonoBehaviour
 
     UnityEngine.MeshRenderer rendered;
 
+    bool emissive = false;
+    static float initialEmissionIntensity = 10.0f;
+    float currentEmissionIntensity = initialEmissionIntensity;
+    Color color;
 
     private void Start()
     {
         ////rendered.material.color = color;
         //rendered = GetComponent<MeshRenderer>();
         //rendered.materials[0].SetColor("_Color", Color.blue);
+
+        rendered = GetComponent<MeshRenderer>();
     }
+
+    private void Update()
+    {
+        rendered = GetComponent<MeshRenderer>();
+
+        if (emissive && rendered != null)
+        {
+            // lower emission to 0, disable emission if close to 0
+
+            if (currentEmissionIntensity > .2f)
+            {
+                currentEmissionIntensity *= 0.991f;
+                rendered.materials[0].SetColor("_EmissionColor", this.color * currentEmissionIntensity);
+            }
+        }
+
+        if (rendered == null)
+        {
+            Debug.LogWarning("Renderer is null, cannot update emission color");
+        }
+    }
+
     // Optional: tint the node by depth for readability
     public void SetDepthColor(int depth)
     {
@@ -28,6 +56,11 @@ public class MctsNodeSphere : MonoBehaviour
         if (!r) return;
         float t = Mathf.InverseLerp(0, 8, depth);
         r.material.color = Color.Lerp(Color.white, new Color(0.7f, 0.9f, 1f), t);
+    }
+
+    public Color GetColor()
+    {
+        return this.color;
     }
 
     public int GetDepth()
@@ -40,6 +73,8 @@ public class MctsNodeSphere : MonoBehaviour
 
     public void SetColor(Color color)
     {
+        this.color = color;
+
         rendered = GetComponent<MeshRenderer>();
         if (rendered != null)
         {
@@ -56,8 +91,11 @@ public class MctsNodeSphere : MonoBehaviour
         rendered = GetComponent<MeshRenderer>();
         if (rendered != null)
         {
+            currentEmissionIntensity = initialEmissionIntensity;
             rendered.materials[0].EnableKeyword("_EMISSION");
-            rendered.materials[0].SetColor("_EmissionColor", color);
+            rendered.materials[0].SetColor("_EmissionColor", color * currentEmissionIntensity);
+
+            emissive = true;
         }
         else
         {

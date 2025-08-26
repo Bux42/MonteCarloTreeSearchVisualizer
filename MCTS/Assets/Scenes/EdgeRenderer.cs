@@ -8,6 +8,8 @@ public class EdgeRenderer : MonoBehaviour
 
     LineRenderer lr;
 
+    bool emissive = false;
+
     void Awake()
     {
         lr = GetComponent<LineRenderer>();
@@ -17,6 +19,26 @@ public class EdgeRenderer : MonoBehaviour
         lr.material = new Material(Shader.Find("Sprites/Default"));
         lr.startColor = Color.gray;
         lr.endColor = Color.gray;
+    }
+
+    private void Update()
+    {
+        if (emissive)
+        {
+            // lower emission to 0, disable emission if close to 0
+            Color c = lr.materials[0].GetColor("_EmissionColor");
+            c *= 0.992f;
+
+            if (c.maxColorComponent < 0.01f)
+            {
+                lr.materials[0].DisableKeyword("_EMISSION");
+                emissive = false;
+            }
+            else
+            {
+                lr.materials[0].SetColor("_EmissionColor", c);
+            }
+        }
     }
 
     void LateUpdate()
@@ -29,5 +51,25 @@ public class EdgeRenderer : MonoBehaviour
     public void SetColor(Color color)
     {
         lr.materials[0].SetColor("_Color", color);
+    }
+
+    public Color GetColor()
+    {
+        return lr.materials[0].GetColor("_Color");
+    }
+
+    public void SetEmissionColor(Color color)
+    {
+        if (lr != null)
+        {
+            lr.materials[0].EnableKeyword("_EMISSION");
+            lr.materials[0].SetColor("_EmissionColor", color);
+
+            emissive = true;
+        }
+        else
+        {
+            Debug.LogWarning("Renderer is null, cannot set emission color");
+        }
     }
 }

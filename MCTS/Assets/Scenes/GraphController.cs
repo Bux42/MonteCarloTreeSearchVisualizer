@@ -163,6 +163,19 @@ public class GraphController : MonoBehaviour
         totalNodesText.text = $"Total Nodes: {nodes.Count}";
     }
 
+    List<EdgeRenderer> GetEdgesToRoot(MctsNodeSphere currentNode)
+    {
+        List<EdgeRenderer> edgesToRoot = new List<EdgeRenderer>();
+
+        while (currentNode.parent != null)
+        {
+            edgesToRoot.Add(edges.Find(x => x.b == currentNode));
+            currentNode = currentNode.parent;
+        }
+
+        return edgesToRoot;
+    }
+
     MctsNodeSphere AddTreeNode(MctsNodeSphere? parentNode, Vector3? position, Transform transform, Node node)
     {
         Vector3 pos = position ?? Vector3.zero;
@@ -187,11 +200,6 @@ public class GraphController : MonoBehaviour
 
         newNode.SetColor(sphereColor);
 
-        if (parentNode == null)
-        {
-            newNode.SetEmissionColor(Color.white);
-        }
-
         nodes.Add(newNode);
 
         if (parentNode != null)
@@ -204,6 +212,23 @@ public class GraphController : MonoBehaviour
 
             edge.SetColor(CriticToColor(node.critic, tree.minCriticScore, tree.maxCriticScore));
         }
+
+        // make it glow
+        newNode.SetEmissionColor(sphereColor);
+        var tmpNode = newNode;
+
+        while (tmpNode.parent != null)
+        {
+            tmpNode = tmpNode.parent;
+            tmpNode.SetEmissionColor(tmpNode.GetColor());
+        }
+
+        //List<EdgeRenderer> edgesToRoot = GetEdgesToRoot(newNode);
+
+        //foreach (var e in edgesToRoot)
+        //{
+        //    //e.SetEmissionColor(e.GetColor());
+        //}
 
         return newNode;
     }
