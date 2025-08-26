@@ -78,11 +78,14 @@ public class GraphController : MonoBehaviour
             {
                 var rootTreeNode = tree.nodes.Find(n => n.parentId == -1);
 
-                // Create root
-                var root = Instantiate(nodePrefab, Vector3.zero, Quaternion.identity, transform);
-                root.gameObject.name = $"Node_id_{rootTreeNode.id}";
-                //root.SetDepthColor(0);
-                nodes.Add(root);
+                //// Create root
+                //var root = Instantiate(nodePrefab, Vector3.zero, Quaternion.identity, transform);
+                //root.gameObject.name = $"Node_id_{rootTreeNode.id}";
+                ////root.SetDepthColor(0);
+                //nodes.Add(root);
+
+                var newNode = AddTreeNode(null, null, transform, rootTreeNode);
+
             }
             else
             {
@@ -103,51 +106,8 @@ public class GraphController : MonoBehaviour
 
                     // Create new node
                     Vector3 spawnPos = parentNode.transform.position + UnityEngine.Random.onUnitSphere * 0.8f;
-                    var newNode = Instantiate(nodePrefab, spawnPos, Quaternion.identity, transform);
 
-                    // Set node color START
-
-                    //Color sphereColor = CriticToColor(tn.critic, tree.minCriticScore, tree.maxCriticScore);
-                    Color sphereColor = nodeColorGradient.Evaluate((float)tree.NormalizeCriticScore(tn.critic));
-
-                    Debug.Log($"Node id {tn.id} critic {tn.critic} color {sphereColor} normalized critic score: {tree.NormalizeCriticScore(tn.critic)}");
-                    Debug.Log($"blue {Color.blue}");
-
-                    //var sphereNodeSphereScript = newNode.GetComponent<MctsNodeSphere>();
-                    //sphereNodeSphereScript.SetColor(sphereColor);
-
-                    newNode.GetComponent<MeshRenderer>().materials[0].SetColor("_Color", sphereColor);
-                    newNode.GetComponent<MeshRenderer>().materials[0].color = sphereColor;
-                    //newNode.GetComponent<MeshRenderer>().materials[0].color = Color.blue;
-                    //newNode.GetComponent<MctsNodeSphere>().GetComponent<MeshRenderer>().materials[0].SetColor("_EmissionColor", sphereColor);
-
-                    //var rend = newNode.GetComponentInChildren<MeshRenderer>();
-                    //var rend2 = newNode.GetComponent<Renderer>();
-
-                    //if (rend != null)
-                    //{
-                    //    //new Material(Shader.Find("Standard"))
-                    //    rend.material = new Material(Shader.Find("Standard")); // unique material
-                    //    Color sphereColor = CriticToColor(tn.critic, tree.minCriticScore, tree.maxCriticScore);
-
-                    //    Debug.Log($"Node id {tn.id} critic {tn.critic} color {sphereColor}");
-                    //    rend.material.color = sphereColor;
-                    //    rend.materials[0].color = sphereColor;
-                    //}
-
-
-                    //MeshRenderer gameObjectRenderer = newNode.GetComponent<MeshRenderer>();
-
-                    //Material newMaterial = new Material(Shader.Find("Unlit/Texture")) { color = whateverColor };
-
-                    //gameObjectRenderer.material = newMaterial;
-                    // Set node color END
-
-                    newNode.gameObject.name = $"Node_id_{tn.id}";
-                    newNode.parent = parentNode;
-                    parentNode.children.Add(newNode);
-                    newNode.SetDepthColor(newNode.GetDepth());
-                    nodes.Add(newNode);
+                    var newNode = AddTreeNode(parentNode, spawnPos, transform, tn);
 
                     // Create edge
                     var edge = Instantiate(edgePrefab, transform);
@@ -161,8 +121,36 @@ public class GraphController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             if (tree == null) return;
-
         }
+    }
+
+    MctsNodeSphere AddTreeNode(MctsNodeSphere? parentNode, Vector3? position, Transform transform, Node node)
+    {
+        Vector3 pos = position ?? Vector3.zero;
+
+        var newNode = Instantiate(nodePrefab, pos, Quaternion.identity, transform);
+
+        newNode.gameObject.name = $"Node_id_{node.id}";
+        newNode.parent = parentNode;
+
+        if (parentNode != null)
+        {
+            parentNode.children.Add(newNode);
+        }
+
+        //newNode.SetDepthColor(newNode.GetDepth());
+
+        //Color sphereColor = CriticToColor(tn.critic, tree.minCriticScore, tree.maxCriticScore);
+        Color sphereColor = nodeColorGradient.Evaluate((float)tree.NormalizeCriticScore(node.critic));
+
+        Debug.Log($"Node id {node.id} critic {node.critic} color {sphereColor} normalized critic score: {tree.NormalizeCriticScore(node.critic)}");
+        Debug.Log($"blue {Color.blue}");
+
+        newNode.SetColor(sphereColor);
+
+        nodes.Add(newNode);
+
+        return newNode;
     }
 
     Color CriticToColor(double value, double vmin = -200, double vmax = 200)

@@ -43,11 +43,7 @@ public class MctsNodeSphere : MonoBehaviour
         rendered = GetComponent<MeshRenderer>();
         if (rendered != null)
         {
-            //StandardMaterial
-            //rendered.material.color = color;
-            rendered.materials[0].SetColor("_EmissionColor", color);
             rendered.materials[0].SetColor("_Color", color);
-            rendered.materials[0].SetColor("_Albedo", color);
         }
         else
         {
