@@ -78,6 +78,44 @@ public class GraphController : MonoBehaviour
         {
             AddNextNode();
         }
+        if (Input.GetKey(KeyCode.H))
+        {
+            ShowControls();
+        }
+        else
+        {
+            HideControls();
+        }
+    }
+
+    void ShowControls()
+    {
+        // SpawnNextNodeText textmeshpro set visible / active
+
+        var go = GameObject.Find("SpawnNextNodeText");
+        if (go != null)
+        {
+            var text = go.GetComponent<TMPro.TextMeshProUGUI>();
+            if (text != null)
+            {
+                text.enabled = true;
+            }
+        }
+    }
+
+    void HideControls()
+    {
+        // SpawnNextNodeText textmeshpro set visible / active
+
+        var go = GameObject.Find("SpawnNextNodeText");
+        if (go != null)
+        {
+            var text = go.GetComponent<TMPro.TextMeshProUGUI>();
+            if (text != null)
+            {
+                text.enabled = false;
+            }
+        }
     }
 
     void AddNextNode()
@@ -137,6 +175,11 @@ public class GraphController : MonoBehaviour
         Debug.Log($"blue {Color.blue}");
 
         newNode.SetColor(sphereColor);
+
+        if (parentNode == null)
+        {
+            newNode.SetEmissionColor(Color.white);
+        }
 
         nodes.Add(newNode);
 

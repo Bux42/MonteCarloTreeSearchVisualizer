@@ -50,4 +50,18 @@ public class MctsNodeSphere : MonoBehaviour
             Debug.LogWarning("Renderer is null, cannot set color");
         }
     }
+
+    public void SetEmissionColor(Color color)
+    {
+        rendered = GetComponent<MeshRenderer>();
+        if (rendered != null)
+        {
+            rendered.materials[0].EnableKeyword("_EMISSION");
+            rendered.materials[0].SetColor("_EmissionColor", color);
+        }
+        else
+        {
+            Debug.LogWarning("Renderer is null, cannot set emission color");
+        }
+    }
 }
