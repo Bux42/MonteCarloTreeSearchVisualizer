@@ -30,6 +30,12 @@ public class MctsNodeSphere : MonoBehaviour
 
     private void Update()
     {
+        // early return 
+        if (currentEmissionIntensity <= .2f)
+        {
+            return;
+        }
+
         rendered = GetComponent<MeshRenderer>();
 
         if (emissive && rendered != null)
@@ -38,7 +44,7 @@ public class MctsNodeSphere : MonoBehaviour
 
             if (currentEmissionIntensity > .2f)
             {
-                currentEmissionIntensity *= 0.991f;
+                currentEmissionIntensity *= 0.98f;
                 rendered.materials[0].SetColor("_EmissionColor", this.color * currentEmissionIntensity);
             }
         }

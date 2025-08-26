@@ -13,7 +13,7 @@ public class GraphController : MonoBehaviour
     public float springK = 400.0f;        // edge spring strength
     public float restLength = 1.5f;      // preferred edge length
     public float damping = 0.99f;         // 0..1 velocity damping each frame
-    public float maxSpeed = 10f;         // clamp for stability
+    public float maxSpeed = 2f;         // clamp for stability
     public float centerPull = 0.2f;      // gentle pull toward origin
 
     [Header("Camera")]
@@ -198,7 +198,7 @@ public class GraphController : MonoBehaviour
         Debug.Log($"Node id {node.id} critic {node.critic} color {sphereColor} normalized critic score: {tree.NormalizeCriticScore(node.critic)}");
         Debug.Log($"blue {Color.blue}");
 
-        newNode.SetColor(sphereColor);
+        newNode.SetColor(parentNode != null ? sphereColor : Color.magenta);
 
         nodes.Add(newNode);
 
@@ -211,6 +211,7 @@ public class GraphController : MonoBehaviour
             edges.Add(edge);
 
             edge.SetColor(CriticToColor(node.critic, tree.minCriticScore, tree.maxCriticScore));
+            edge.SetEmissionColor(CriticToColor(node.critic, tree.minCriticScore, tree.maxCriticScore));
         }
 
         // make it glow
@@ -223,12 +224,12 @@ public class GraphController : MonoBehaviour
             tmpNode.SetEmissionColor(tmpNode.GetColor());
         }
 
-        //List<EdgeRenderer> edgesToRoot = GetEdgesToRoot(newNode);
+        List<EdgeRenderer> edgesToRoot = GetEdgesToRoot(newNode);
 
-        //foreach (var e in edgesToRoot)
-        //{
-        //    //e.SetEmissionColor(e.GetColor());
-        //}
+        foreach (var e in edgesToRoot)
+        {
+            e.SetEmissionColor(e.GetColor());
+        }
 
         return newNode;
     }

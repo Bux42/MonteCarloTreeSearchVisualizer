@@ -745,7 +745,7 @@ MonoBehaviour:
   springK: 400
   restLength: 1.5
   damping: 0.99
-  maxSpeed: 10
+  maxSpeed: 2
   centerPull: 0.2
   mainCamera: {fileID: 1478430299}
 --- !u!1 &1478430297

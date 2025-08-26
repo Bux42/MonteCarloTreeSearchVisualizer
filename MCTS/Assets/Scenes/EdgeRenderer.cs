@@ -63,7 +63,7 @@ public class EdgeRenderer : MonoBehaviour
         if (lr != null)
         {
             lr.materials[0].EnableKeyword("_EMISSION");
-            lr.materials[0].SetColor("_EmissionColor", color);
+            lr.materials[0].SetColor("_EmissionColor", color * 4);
 
             emissive = true;
         }
