@@ -25,6 +25,8 @@ public class GraphController : MonoBehaviour
     MctcTree tree = null;
     Gradient nodeColorGradient = new Gradient();
 
+    TMPro.TextMeshProUGUI totalNodesText = null;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -48,6 +50,13 @@ public class GraphController : MonoBehaviour
         nodeColorGradient.SetKeys(colors, alphas);
 
         LoadTreeFile();
+
+
+        var totalNodesGo = GameObject.Find("TotalNodesText");
+        if (totalNodesGo != null)
+        {
+            totalNodesText = totalNodesGo.GetComponent<TMPro.TextMeshProUGUI>();
+        }
     }
 
     // Update is called once per frame
@@ -90,9 +99,9 @@ public class GraphController : MonoBehaviour
 
     void ShowControls()
     {
-        // SpawnNextNodeText textmeshpro set visible / active
+        // ControlsText textmeshpro set visible / active
 
-        var go = GameObject.Find("SpawnNextNodeText");
+        var go = GameObject.Find("ControlsText");
         if (go != null)
         {
             var text = go.GetComponent<TMPro.TextMeshProUGUI>();
@@ -105,9 +114,9 @@ public class GraphController : MonoBehaviour
 
     void HideControls()
     {
-        // SpawnNextNodeText textmeshpro set visible / active
+        // ControlsText textmeshpro set visible / active
 
-        var go = GameObject.Find("SpawnNextNodeText");
+        var go = GameObject.Find("ControlsText");
         if (go != null)
         {
             var text = go.GetComponent<TMPro.TextMeshProUGUI>();
@@ -150,6 +159,8 @@ public class GraphController : MonoBehaviour
                 break;
             }
         }
+
+        totalNodesText.text = $"Total Nodes: {nodes.Count}";
     }
 
     MctsNodeSphere AddTreeNode(MctsNodeSphere? parentNode, Vector3? position, Transform transform, Node node)
@@ -260,7 +271,7 @@ public class GraphController : MonoBehaviour
             float dist = delta.magnitude + 1e-6f;
             Vector3 dir = delta / dist;
             float ext = dist - restLength;             // positive if stretched
-            Vector3 f = springK * ext * dir;           // Hooke’s law
+            Vector3 f = springK * ext * dir;           // Hookeï¿½s law
             e.a.velocity += f * dt;
             e.b.velocity -= f * dt;
         }
