@@ -212,6 +212,7 @@ public class GraphController : MonoBehaviour
 
             edge.SetColor(CriticToColor(node.critic, tree.minCriticScore, tree.maxCriticScore));
             edge.SetEmissionColor(CriticToColor(node.critic, tree.minCriticScore, tree.maxCriticScore));
+            edge.SetLineWidth(0.08f);
         }
 
         // make it glow
@@ -229,6 +230,7 @@ public class GraphController : MonoBehaviour
         foreach (var e in edgesToRoot)
         {
             e.SetEmissionColor(e.GetColor());
+            e.SetLineWidth(0.08f);
         }
 
         return newNode;
