@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class GraphController : MonoBehaviour
@@ -26,6 +27,22 @@ public class GraphController : MonoBehaviour
     Gradient nodeColorGradient = new Gradient();
 
     TMPro.TextMeshProUGUI totalNodesText = null;
+
+    Vector3[] pos, vel; // caches
+    // Uniform grid (spatial hash): cell -> list of indices
+    readonly Dictionary<Vector3Int, List<int>> grid = new Dictionary<Vector3Int, List<int>>(1024);
+    float cellSize;
+    public List<EdgeIdx> edgesIdxs = new List<EdgeIdx>(); // integer index edges
+    public float cutoff = 10f; // neighbors beyond this distance ignored
+    float cutoff2;
+
+    public struct EdgeIdx { public int a, b; }
+
+    void Awake()
+    {
+        cutoff2 = cutoff * cutoff;
+        cellSize = cutoff;
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -62,22 +79,7 @@ public class GraphController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        RunLayout(Time.deltaTime);
-        //HandleClickToAddChild();
-
-        //if (Input.GetKeyDown(KeyCode.Space))
-        //{
-        //    // Deserialize Assets/Data/mcts_tree.json to MctcTree class
-
-        //    TextAsset textFile = (TextAsset)Resources.Load("mcts_tree");
-        //    var all = Resources.LoadAll(".");
-
-        //    MctcTree tree = JsonUtility.FromJson<MctcTree>(textFile.text);
-
-        //    Debug.Log($"Loaded tree with {tree.nodes.Count} nodes and {tree.edges.Count} edges");
-
-        //    // json doesn't like nulls, so we use -1 instead of nullable ints
-        //}
+        UpdateTreeNodePositions(Time.deltaTime);
 
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
@@ -129,7 +131,9 @@ public class GraphController : MonoBehaviour
 
     void AddNextNode()
     {
-        if (tree == null) return;
+        if (tree == null || tree.nodes.Count == nodes.Count) return;
+
+        DateTime before = DateTime.Now;
 
         if (nodes.Count == 0)
         {
@@ -138,29 +142,29 @@ public class GraphController : MonoBehaviour
         }
         else
         {
-            for (int i = 0; i < tree.nodes.Count; i++)
+            var tn = tree.nodes[nodes.Count];
+            // Find parent node in scene
+            var parentNode = nodes.Find(n => n.name == $"Node_id_{tn.parentId}");
+
+            if (parentNode == null)
             {
-                var tn = tree.nodes[i];
-                // Check if this node is already created
-                bool exists = nodes.Exists(n => n.name == $"Node_id_{tn.id}");
-                if (exists) continue;
-
-                // Find parent node in scene
-                var parentNode = nodes.Find(n => n.name == $"Node_id_{tn.parentId}");
-                if (parentNode == null)
-                {
-                    Debug.LogWarning($"Parent node with id {tn.parentId} not found for node id {tn.id}");
-                    continue;
-                }
-
+                Debug.LogWarning($"Parent node with id {tn.parentId} not found for node id {tn.id}");
+            }
+            else
+            {
                 // Create new node
                 Vector3 spawnPos = parentNode.transform.position + UnityEngine.Random.onUnitSphere * 0.8f;
+
+                Debug.Log($"Add node at index: {nodes.Count} Total nodes: {nodes.Count} / {tree.nodes.Count}");
                 AddTreeNode(parentNode, spawnPos, transform, tn);
-                break;
             }
         }
 
-        totalNodesText.text = $"Total Nodes: {nodes.Count}";
+        totalNodesText.text = $"Total Nodes: {nodes.Count} / {tree.nodes.Count}";
+
+        DateTime after = DateTime.Now;
+        TimeSpan duration = after.Subtract(before);
+        Debug.Log("AddNextNode ms: " + duration.Milliseconds);
     }
 
     List<EdgeRenderer> GetEdgesToRoot(MctsNodeSphere currentNode)
@@ -178,6 +182,8 @@ public class GraphController : MonoBehaviour
 
     MctsNodeSphere AddTreeNode(MctsNodeSphere? parentNode, Vector3? position, Transform transform, Node node)
     {
+        DateTime before = DateTime.Now;
+
         Vector3 pos = position ?? Vector3.zero;
 
         var newNode = Instantiate(nodePrefab, pos, Quaternion.identity, transform);
@@ -195,8 +201,8 @@ public class GraphController : MonoBehaviour
         //Color sphereColor = CriticToColor(tn.critic, tree.minCriticScore, tree.maxCriticScore);
         Color sphereColor = nodeColorGradient.Evaluate((float)tree.NormalizeCriticScore(node.critic));
 
-        Debug.Log($"Node id {node.id} critic {node.critic} color {sphereColor} normalized critic score: {tree.NormalizeCriticScore(node.critic)}");
-        Debug.Log($"blue {Color.blue}");
+        //Debug.Log($"Node id {node.id} critic {node.critic} color {sphereColor} normalized critic score: {tree.NormalizeCriticScore(node.critic)}");
+        //Debug.Log($"blue {Color.blue}");
 
         Color nodeColor = sphereColor;
 
@@ -207,7 +213,7 @@ public class GraphController : MonoBehaviour
 
         if (node.terminated)
         {
-            nodeColor = Color.blue; // terminal node
+            nodeColor = Color.cyan; // terminal node
         }
 
         newNode.SetColor(nodeColor);
@@ -221,6 +227,8 @@ public class GraphController : MonoBehaviour
             edge.a = parentNode;
             edge.b = newNode;
             edges.Add(edge);
+
+            edgesIdxs.Add(new EdgeIdx { a = nodes.IndexOf(parentNode), b = nodes.IndexOf(newNode) });
 
             edge.SetColor(parentNode.color, newNode.color);
             edge.SetEmissionColor(newNode.color);
@@ -244,6 +252,10 @@ public class GraphController : MonoBehaviour
             e.SetEmissionColor(e.GetColor());
             e.SetLineWidth(0.1f);
         }
+
+        DateTime after = DateTime.Now;
+        TimeSpan duration = after.Subtract(before);
+        Debug.Log("AddTreeNode ms: " + duration.Milliseconds);
 
         return newNode;
     }
@@ -283,66 +295,137 @@ public class GraphController : MonoBehaviour
         // json doesn't like nulls, so we use -1 instead of nullable ints
     }
 
-
-    void RunLayout(float dt)
+    void UpdateTreeNodePositions(float dt)
     {
-        // Pairwise repulsion (O(n^2), fine for a few hundred nodes)
-        for (int i = 0; i < nodes.Count; i++)
-        {
-            var ni = nodes[i];
-            for (int j = i + 1; j < nodes.Count; j++)
-            {
-                var nj = nodes[j];
-                Vector3 delta = ni.transform.position - nj.transform.position;
+        int n = nodes.Count;
+        if (n == 0 || edgesIdxs.Count == 0) return;
 
-                if (delta.magnitude > 10)
+        // resize caches
+        if (pos == null || pos.Length < n)
+        {
+            pos = new Vector3[n];
+            vel = new Vector3[n];
+        }
+
+        // snapshot positions/velocities once
+        for (int i = 0; i < n; i++)
+        {
+            pos[i] = nodes[i].transform.position;
+            vel[i] = nodes[i].velocity;
+        }
+
+        // rebuild grid
+        grid.Clear();
+        for (int i = 0; i < n; i++)
+        {
+            var c = ToCell(pos[i]);
+            if (!grid.TryGetValue(c, out var list))
+            {
+                list = new List<int>(8);
+                grid[c] = list;
+            }
+            list.Add(i);
+        }
+
+        // pairwise repulsion using neighbor cells only
+        foreach (var kv in grid)
+        {
+            var cell = kv.Key;
+            var listA = kv.Value;
+
+            // iterate current cell vs itself (i<j)
+            for (int ii = 0; ii < listA.Count; ii++)
+            {
+                int i = listA[ii];
+                for (int jj = ii + 1; jj < listA.Count; jj++)
                 {
-                    continue;
+                    int j = listA[jj];
+                    ApplyRepulsion(i, j, dt);
                 }
-                //if (i == 0)
-                //{
-                //    Debug.Log($"Delta between {ni.name} and {nj.name}: {delta} magnitude {delta.magnitude}");
-                //}
-                float d2 = delta.sqrMagnitude + 1e-6f;
-                Vector3 dir = delta.normalized;
-                float force = repulsion / d2; // 1/r^2
-                Vector3 f = dir * force;
-                ni.velocity += f * dt;
-                nj.velocity -= f * dt;
-            }
-        }
-
-        // Springs on edges
-        foreach (var e in edges)
-        {
-            if (!e.a || !e.b) continue;
-            Vector3 delta = e.b.transform.position - e.a.transform.position;
-
-            if (delta.magnitude > 10)
-            {
-                continue;
             }
 
-            float dist = delta.magnitude + 1e-6f;
-            Vector3 dir = delta / dist;
-            float ext = dist - restLength;             // positive if stretched
-            Vector3 f = springK * ext * dir;           // Hooke's law
-            e.a.velocity += f * dt;
-            e.b.velocity -= f * dt;
+            // iterate against 26 neighbor cells
+            for (int dx = -1; dx <= 1; dx++)
+                for (int dy = -1; dy <= 1; dy++)
+                    for (int dz = -1; dz <= 1; dz++)
+                    {
+                        if (dx == 0 && dy == 0 && dz == 0) continue;
+                        var nb = new Vector3Int(cell.x + dx, cell.y + dy, cell.z + dz);
+                        if (!grid.TryGetValue(nb, out var listB)) continue;
+
+                        // cross pairs (all of A vs all of B)
+                        for (int ii = 0; ii < listA.Count; ii++)
+                        {
+                            int i = listA[ii];
+                            for (int jj = 0; jj < listB.Count; jj++)
+                            {
+                                int j = listB[jj];
+                                if (j <= i) continue; // avoid duplicates & self
+                                ApplyRepulsion(i, j, dt);
+                            }
+                        }
+                    }
         }
 
-        // Gentle pull to center + integrate
-        foreach (var n in nodes)
+        // springs along edgesIdxs (already sparse)
+        for (int e = 0; e < edgesIdxs.Count; e++)
         {
-            n.velocity += -centerPull * n.transform.position * dt;
+            int a = edgesIdxs[e].a;
+            int b = edgesIdxs[e].b;
 
-            // damping & clamp
-            n.velocity *= damping;
-            n.velocity = Vector3.ClampMagnitude(n.velocity, maxSpeed);
+            Vector3 d = pos[b] - pos[a];
+            float d2 = d.sqrMagnitude;
+            if (d2 > cutoff2) continue; // skip far springs (optional)
 
-            n.transform.position += n.velocity * dt;
+            float dist = Mathf.Sqrt(d2) + 1e-6f;
+            Vector3 dir = d / dist;
+            float ext = dist - restLength;
+            Vector3 f = springK * ext * dir;
+            vel[a] += f * dt;
+            vel[b] -= f * dt;
+        }
+
+        // center pull, damping, integrate, write back once
+        for (int i = 0; i < n; i++)
+        {
+            vel[i] += -centerPull * pos[i] * dt;
+            vel[i] *= damping;
+            if (vel[i].sqrMagnitude > maxSpeed * maxSpeed)
+                vel[i] = vel[i].normalized * maxSpeed;
+
+            pos[i] += vel[i] * dt;
+
+            nodes[i].velocity = vel[i];
+            nodes[i].transform.position = pos[i];
         }
     }
+
+    [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    void ApplyRepulsion(int i, int j, float dt)
+    {
+        Vector3 d = pos[i] - pos[j];
+        float d2 = d.sqrMagnitude + 1e-6f;
+        if (d2 > cutoff2) return;                // cheap reject
+
+        // 1/r^2, soften at very small r
+        float invDist = Mathf.Sqrt(1f / d2);     // 1/sqrt(d2)
+        Vector3 dir = d * invDist;               // normalized delta
+        float force = repulsion / d2;
+        Vector3 f = dir * force;
+        vel[i] += f * dt;
+        vel[j] -= f * dt;
+    }
+
+    [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    Vector3Int ToCell(Vector3 p)
+    {
+        return new Vector3Int(
+            Mathf.FloorToInt(p.x / cellSize),
+            Mathf.FloorToInt(p.y / cellSize),
+            Mathf.FloorToInt(p.z / cellSize)
+        );
+    }
+
 
     void HandleClickToAddChild()
     {

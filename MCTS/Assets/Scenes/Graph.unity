@@ -748,6 +748,7 @@ MonoBehaviour:
   maxSpeed: 2
   centerPull: 0.2
   mainCamera: {fileID: 1478430299}
+  cutoff: 10
 --- !u!1 &1478430297
 GameObject:
   m_ObjectHideFlags: 0
@@ -1011,16 +1012,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Right arrow: Spawn next node
-
-    Space: Spawn in loop
-
-    Middle mouse:
-    Zoom
-
-    Hold middle mouse: Rotate
-
-    F + hover node: Focus hovered node'
+  m_text: "Right arrow: Spawn next node\nSpace: Spawn in loop\nMiddle mouse: Zoom\nHold
+    middle mouse: Rotate\nF + hover node: Focus hovered node\n\nScores colors:\n\t-
+    Red = low\n\t- Yellow = median\n\t- Green = high\n\t- Cyan = terminated"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1154,7 +1148,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Total Nodes: 0'
+  m_text: 'Total Nodes: 0 / 0'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
