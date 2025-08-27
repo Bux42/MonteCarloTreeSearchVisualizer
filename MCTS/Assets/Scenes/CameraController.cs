@@ -66,14 +66,11 @@ public class CameraController : MonoBehaviour
             float dx = Input.GetAxis("Mouse X") / 100;
             float dy = -Input.GetAxis("Mouse Y") / 100;
 
-            if (target != null)
-            {
-                Quaternion rotX = Quaternion.Euler(0, dx * rotationSpeed, 0);
-                Quaternion rotY = Quaternion.Euler(dy * rotationSpeed, 0, 0);
-                Vector3 dir = mainCamera.transform.position - focusPoint;
-                dir = rotX * rotY * dir;
-                mainCamera.transform.position = focusPoint + dir;
-            }
+            Quaternion rotX = Quaternion.Euler(0, dx * rotationSpeed, 0);
+            Quaternion rotY = Quaternion.Euler(dy * rotationSpeed, 0, 0);
+            Vector3 dir = mainCamera.transform.position - focusPoint;
+            dir = rotX * rotY * dir;
+            mainCamera.transform.position = focusPoint + dir;
         }
     }
 
