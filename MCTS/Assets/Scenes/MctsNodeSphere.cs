@@ -17,7 +17,7 @@ public class MctsNodeSphere : MonoBehaviour
     bool emissive = false;
     static float initialEmissionIntensity = 10.0f;
     float currentEmissionIntensity = initialEmissionIntensity;
-    Color color;
+    public Color color;
 
     private void Start()
     {

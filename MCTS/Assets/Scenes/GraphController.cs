@@ -210,9 +210,9 @@ public class GraphController : MonoBehaviour
             edge.b = newNode;
             edges.Add(edge);
 
-            edge.SetColor(CriticToColor(node.critic, tree.minCriticScore, tree.maxCriticScore));
-            edge.SetEmissionColor(CriticToColor(node.critic, tree.minCriticScore, tree.maxCriticScore));
-            edge.SetLineWidth(0.1f);
+            edge.SetColor(parentNode.color, newNode.color);
+            edge.SetEmissionColor(newNode.color);
+            edge.SetLineWidth(0.2f);
         }
 
         // make it glow

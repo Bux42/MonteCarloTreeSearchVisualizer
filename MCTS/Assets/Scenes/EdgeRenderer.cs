@@ -10,7 +10,10 @@ public class EdgeRenderer : MonoBehaviour
 
     bool emissive = false;
     static float defaultLineWidth = 0.02f;
-    float currentLineWidth = 0.02f;
+    float currentLineWidth = 0.2f;
+
+    Color startColor;
+    Color endColor;
 
     void Awake()
     {
@@ -57,11 +60,13 @@ public class EdgeRenderer : MonoBehaviour
         lr.SetPosition(1, b.transform.position);
     }
 
-    public void SetColor(Color color)
+    public void SetColor(Color startColor, Color endColor)
     {
-        lr.materials[0].SetColor("_Color", color);
-        lr.startColor = color;
-        lr.endColor = color;
+        this.startColor = startColor;
+        this.endColor = endColor;
+        //lr.materials[0].SetColor("_Color", color);
+        lr.startColor = this.startColor;
+        lr.endColor = this.endColor;
     }
 
     public void SetLineWidth(float width)
