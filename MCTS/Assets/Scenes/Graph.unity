@@ -1013,8 +1013,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "Right arrow: Spawn next node\nSpace: Spawn in loop\nMiddle mouse: Zoom\nHold
-    middle mouse: Rotate\nF + hover node: Focus hovered node\n\nScores colors:\n\t-
-    Red = low\n\t- Yellow = median\n\t- Green = high\n\t- Cyan = terminated"
+    middle mouse: Rotate\nF + hover node: Focus hovered node\nR: Reset\n\nScores
+    colors:\n\t- Red = low\n\t- Yellow = median\n\t- Green = high\n\t- Cyan = terminated"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

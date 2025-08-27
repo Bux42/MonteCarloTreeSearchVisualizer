@@ -32,6 +32,7 @@ public class Node
     public int visits;
     public double wins;
     public bool terminated;
+    public bool actionTerminated;
     public int iteration;
     public bool fightWon;
     public List<int> children;

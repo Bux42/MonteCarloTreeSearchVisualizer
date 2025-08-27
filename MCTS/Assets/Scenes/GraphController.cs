@@ -89,6 +89,17 @@ public class GraphController : MonoBehaviour
         {
             AddNextNode();
         }
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            // Reset
+            nodes.Clear();
+            edges.Clear();
+            edgesIdxs.Clear();
+            foreach (Transform child in transform)
+            {
+                Destroy(child.gameObject);
+            }
+        }
         if (Input.GetKey(KeyCode.H))
         {
             ShowControls();
@@ -211,7 +222,7 @@ public class GraphController : MonoBehaviour
             nodeColor = Color.magenta; // root node
         }
 
-        if (node.terminated)
+        if (node.actionTerminated)
         {
             nodeColor = Color.cyan; // terminal node
         }
