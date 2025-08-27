@@ -68,7 +68,6 @@ public class GraphController : MonoBehaviour
 
         LoadTreeFile();
 
-
         var totalNodesGo = GameObject.Find("TotalNodesText");
         if (totalNodesGo != null)
         {
@@ -107,6 +106,17 @@ public class GraphController : MonoBehaviour
         else
         {
             HideControls();
+        }
+        if (Input.GetKey(KeyCode.P))
+        {
+            // get node under mouse and add child
+            MctsNodeSphere? hoverNode = GetNodeUnderMouse();
+
+            if (hoverNode != null)
+            {
+                HighLightNodeEdgesToRoot(hoverNode);
+                HighLightNodeToRoot(hoverNode);
+            }
         }
     }
 
@@ -228,6 +238,7 @@ public class GraphController : MonoBehaviour
         }
 
         newNode.SetColor(nodeColor);
+        newNode.SetEmissionColor(sphereColor);
 
         nodes.Add(newNode);
 
@@ -247,28 +258,38 @@ public class GraphController : MonoBehaviour
         }
 
         // make it glow
-        newNode.SetEmissionColor(sphereColor);
-        var tmpNode = newNode;
-
-        while (tmpNode.parent != null)
-        {
-            tmpNode = tmpNode.parent;
-            tmpNode.SetEmissionColor(tmpNode.GetColor());
-        }
-
-        List<EdgeRenderer> edgesToRoot = GetEdgesToRoot(newNode);
-
-        foreach (var e in edgesToRoot)
-        {
-            e.SetEmissionColor(e.GetColor());
-            e.SetLineWidth(0.1f);
-        }
+        HighLightNodeToRoot(newNode);
+        HighLightNodeEdgesToRoot(newNode);
 
         DateTime after = DateTime.Now;
         TimeSpan duration = after.Subtract(before);
         Debug.Log("AddTreeNode ms: " + duration.Milliseconds);
 
         return newNode;
+    }
+
+    void HighLightNodeToRoot(MctsNodeSphere mctsNodeSphere)
+    {
+        var tmpNode = mctsNodeSphere;
+
+        tmpNode.SetEmissionColor(tmpNode.GetColor());
+
+        while (tmpNode.parent != null)
+        {
+            tmpNode = tmpNode.parent;
+            tmpNode.SetEmissionColor(tmpNode.GetColor());
+        }
+    }
+
+    void HighLightNodeEdgesToRoot(MctsNodeSphere mctsNodeSphere)
+    {
+        List<EdgeRenderer> edgesToRoot = GetEdgesToRoot(mctsNodeSphere);
+
+        foreach (var e in edgesToRoot)
+        {
+            e.SetEmissionColor(e.GetColor());
+            e.SetLineWidth(0.1f);
+        }
     }
 
     Color CriticToColor(double value, double vmin = -200, double vmax = 200)
@@ -299,11 +320,11 @@ public class GraphController : MonoBehaviour
         TextAsset textFile = (TextAsset)Resources.Load("mcts_tree");
         var all = Resources.LoadAll(".");
 
+        // json doesn't like nulls, so we use -1 instead of nullable ints
         tree = JsonUtility.FromJson<MctcTree>(textFile.text);
 
         Debug.Log($"Loaded tree with {tree.nodes.Count} nodes and {tree.edges.Count} edges");
         tree.SetMinMaxValues();
-        // json doesn't like nulls, so we use -1 instead of nullable ints
     }
 
     void UpdateTreeNodePositions(float dt)
@@ -437,6 +458,14 @@ public class GraphController : MonoBehaviour
         );
     }
 
+    MctsNodeSphere? GetNodeUnderMouse()
+    {
+        var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        if (!Physics.Raycast(ray, out var hit, 1000f)) return null;
+
+        var node = hit.collider.GetComponentInParent<MctsNodeSphere>();
+        return node;
+    }
 
     void HandleClickToAddChild()
     {
@@ -445,7 +474,7 @@ public class GraphController : MonoBehaviour
         var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (!Physics.Raycast(ray, out var hit, 1000f)) return;
 
-        var node = hit.collider.GetComponentInParent<MctsNodeSphere>();
+        var node = GetNodeUnderMouse();
         if (!node) return;
 
         Debug.Log($"Add child to {node.name}");
