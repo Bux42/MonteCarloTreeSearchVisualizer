@@ -1015,10 +1015,12 @@ MonoBehaviour:
 
     Space: Spawn in loop
 
-    Scroll: Zoom
+    Middle mouse:
+    Zoom
 
-    F
-    + hover node: Focus hovered node'
+    Hold middle mouse: Rotate
+
+    F + hover node: Focus hovered node'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

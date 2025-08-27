@@ -63,13 +63,17 @@ public class CameraController : MonoBehaviour
         // --- Rotation ---
         if (Input.GetMouseButton(2)) // middle mouse
         {
-            float dx = Input.GetAxis("Mouse X");
-            float dy = -Input.GetAxis("Mouse Y");
+            float dx = Input.GetAxis("Mouse X") / 100;
+            float dy = -Input.GetAxis("Mouse Y") / 100;
 
-            Quaternion rot = Quaternion.Euler(dy * rotationSpeed, dx * rotationSpeed, 0);
-            Vector3 dir = mainCamera.transform.position - focusPoint;
-            dir = rot * dir;
-            focusPoint = mainCamera.transform.position - dir;
+            if (target != null)
+            {
+                Quaternion rotX = Quaternion.Euler(0, dx * rotationSpeed, 0);
+                Quaternion rotY = Quaternion.Euler(dy * rotationSpeed, 0, 0);
+                Vector3 dir = mainCamera.transform.position - focusPoint;
+                dir = rotX * rotY * dir;
+                mainCamera.transform.position = focusPoint + dir;
+            }
         }
     }
 

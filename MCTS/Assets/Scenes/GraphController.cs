@@ -198,7 +198,19 @@ public class GraphController : MonoBehaviour
         Debug.Log($"Node id {node.id} critic {node.critic} color {sphereColor} normalized critic score: {tree.NormalizeCriticScore(node.critic)}");
         Debug.Log($"blue {Color.blue}");
 
-        newNode.SetColor(parentNode != null ? sphereColor : Color.magenta);
+        Color nodeColor = sphereColor;
+
+        if (parentNode == null)
+        {
+            nodeColor = Color.magenta; // root node
+        }
+
+        if (node.terminated)
+        {
+            nodeColor = Color.blue; // terminal node
+        }
+
+        newNode.SetColor(nodeColor);
 
         nodes.Add(newNode);
 
@@ -282,6 +294,15 @@ public class GraphController : MonoBehaviour
             {
                 var nj = nodes[j];
                 Vector3 delta = ni.transform.position - nj.transform.position;
+
+                if (delta.magnitude > 10)
+                {
+                    continue;
+                }
+                //if (i == 0)
+                //{
+                //    Debug.Log($"Delta between {ni.name} and {nj.name}: {delta} magnitude {delta.magnitude}");
+                //}
                 float d2 = delta.sqrMagnitude + 1e-6f;
                 Vector3 dir = delta.normalized;
                 float force = repulsion / d2; // 1/r^2
@@ -296,10 +317,16 @@ public class GraphController : MonoBehaviour
         {
             if (!e.a || !e.b) continue;
             Vector3 delta = e.b.transform.position - e.a.transform.position;
+
+            if (delta.magnitude > 10)
+            {
+                continue;
+            }
+
             float dist = delta.magnitude + 1e-6f;
             Vector3 dir = delta / dist;
             float ext = dist - restLength;             // positive if stretched
-            Vector3 f = springK * ext * dir;           // Hooke�s law
+            Vector3 f = springK * ext * dir;           // Hooke's law
             e.a.velocity += f * dt;
             e.b.velocity -= f * dt;
         }
