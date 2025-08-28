@@ -154,7 +154,7 @@ public class GraphController : MonoBehaviour
     {
         if (tree == null || tree.nodes.Count == nodes.Count) return;
 
-        DateTime before = DateTime.Now;
+        //DateTime before = DateTime.Now;
 
         if (nodes.Count == 0)
         {
@@ -176,16 +176,16 @@ public class GraphController : MonoBehaviour
                 // Create new node
                 Vector3 spawnPos = parentNode.transform.position + UnityEngine.Random.onUnitSphere * 0.8f;
 
-                Debug.Log($"Add node at index: {nodes.Count} Total nodes: {nodes.Count} / {tree.nodes.Count}");
+                //Debug.Log($"Add node at index: {nodes.Count} Total nodes: {nodes.Count} / {tree.nodes.Count}");
                 AddTreeNode(parentNode, spawnPos, transform, tn);
             }
         }
 
         totalNodesText.text = $"Total Nodes: {nodes.Count} / {tree.nodes.Count}";
 
-        DateTime after = DateTime.Now;
-        TimeSpan duration = after.Subtract(before);
-        Debug.Log("AddNextNode ms: " + duration.Milliseconds);
+        //DateTime after = DateTime.Now;
+        //TimeSpan duration = after.Subtract(before);
+        //Debug.Log("AddNextNode ms: " + duration.Milliseconds);
     }
 
     List<EdgeRenderer> GetEdgesToRoot(MctsNodeSphere currentNode)
@@ -203,7 +203,7 @@ public class GraphController : MonoBehaviour
 
     MctsNodeSphere AddTreeNode(MctsNodeSphere? parentNode, Vector3? position, Transform transform, Node node)
     {
-        DateTime before = DateTime.Now;
+        //DateTime before = DateTime.Now;
 
         Vector3 pos = position ?? Vector3.zero;
 
@@ -261,9 +261,9 @@ public class GraphController : MonoBehaviour
         HighLightNodeToRoot(newNode);
         HighLightNodeEdgesToRoot(newNode);
 
-        DateTime after = DateTime.Now;
-        TimeSpan duration = after.Subtract(before);
-        Debug.Log("AddTreeNode ms: " + duration.Milliseconds);
+        //DateTime after = DateTime.Now;
+        //TimeSpan duration = after.Subtract(before);
+        //Debug.Log("AddTreeNode ms: " + duration.Milliseconds);
 
         return newNode;
     }
