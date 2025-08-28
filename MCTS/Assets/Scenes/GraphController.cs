@@ -11,7 +11,7 @@ public class GraphController : MonoBehaviour
 
     [Header("Physics (layout)")]
     public float repulsion = 50.0f;       // higher = stronger push between all nodes
-    public float springK = 400.0f;        // edge spring strength
+    public float springK = 100.0f;        // edge spring strength
     public float restLength = 1.5f;      // preferred edge length
     public float damping = 0.99f;         // 0..1 velocity damping each frame
     public float maxSpeed = 2f;         // clamp for stability

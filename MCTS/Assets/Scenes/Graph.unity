@@ -742,7 +742,7 @@ MonoBehaviour:
   nodePrefab: {fileID: -8681598849370107832, guid: 9d3914553ef73924a8a5f3e026b36c19, type: 3}
   edgePrefab: {fileID: 3061032862633757617, guid: b3deb97ca9b618141b7f010db7541c10, type: 3}
   repulsion: 50
-  springK: 400
+  springK: 100
   restLength: 1.5
   damping: 0.99
   maxSpeed: 2
