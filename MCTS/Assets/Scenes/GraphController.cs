@@ -254,7 +254,7 @@ public class GraphController : MonoBehaviour
 
             edge.SetColor(parentNode.color, newNode.color);
             edge.SetEmissionColor(newNode.color);
-            edge.SetLineWidth(0.2f);
+            edge.SetLineWidth(0.5f);
         }
 
         // make it glow
