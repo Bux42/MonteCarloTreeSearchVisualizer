@@ -46,16 +46,26 @@ public class MctcTree
     public List<Edge> edges;
     public double minCriticScore;
     public double maxCriticScore;
+    public double minDepth;
+    public double maxDepth;
 
     public void SetMinMaxValues()
     {
         minCriticScore = nodes.Min(x => x.critic);
         maxCriticScore = nodes.Max(x => x.critic);
+
+        minDepth = nodes.Min(x => x.depth);
+        maxDepth = nodes.Max(x => x.depth);
     }
 
     public double NormalizeCriticScore(double score)
     {
         return (score - minCriticScore) / (maxCriticScore - minCriticScore);
+    }
+
+    public double NormalizeDepth(double depth)
+    {
+        return (depth - minDepth) / (maxDepth - minDepth);
     }
 }
 
