@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -289,27 +288,6 @@ public class GraphController : MonoBehaviour
         {
             e.SetEmissionColor(e.GetColor());
             e.SetLineWidth(0.1f);
-        }
-    }
-
-    Color CriticToColor(double value, double vmin = -200, double vmax = 200)
-    {
-        // clamp
-        double v = Math.Max(Math.Min(value, vmax), vmin);
-        // normalize [0..1]
-        double norm = (v - vmin) / (vmax - vmin);
-
-        if (norm < 0.5)
-        {
-            // red -> white
-            float t = (float)(norm / 0.5);
-            return new Color(1f, t, t);
-        }
-        else
-        {
-            // white -> green
-            float t = (float)((norm - 0.5) / 0.5);
-            return new Color(1f - t, 1f, 1f - t);
         }
     }
 
